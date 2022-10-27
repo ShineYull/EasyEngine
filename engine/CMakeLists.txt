@@ -1,6 +1,5 @@
-﻿# CMakeList.txt: EasyEngine 的 CMake 项目，在此处包括源代码并定义
-# 项目特定的逻辑。
-#
+﻿# EasyEngine project build entry.
+
 cmake_minimum_required (VERSION 3.8)
 
 include_directories(include)
@@ -8,6 +7,9 @@ include_directories(include)
 link_directories(lib)
 
 aux_source_directory(./source source_list)
+aux_source_directory(./source/tool source_list)
+
+message(STATUS "[Shine] source_list: ${source_list}")
 
 add_executable (OpenGLTest ${source_list})
 

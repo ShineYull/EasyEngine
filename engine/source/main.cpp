@@ -3,29 +3,13 @@
 
 #include <iostream>
 
+#include <tool/shader.h>
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec3 myColor;\n"
-"out vec3 vertexColor;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos, 1.0);\n"
-"   vertexColor = myColor;"
-"}\0";
-
-const char* fragmentShader1Source = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"in vec3 vertexColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(vertexColor, 1.0f);"
-"}\n\0";
 
 int main() {
 	
@@ -54,6 +38,8 @@ int main() {
         return -1;
     }
 
+    Shine::Shader ourShader("../../engine/source/GLSL/vertex.glsl", "../../engine/source/GLSL/fragment.glsl"); // you can name your shader files however you like
+
     float firstTriangle[] = {
         // Œª÷√              // —’…´
          0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // ”“œ¬
@@ -76,22 +62,6 @@ int main() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    unsigned int fragmentShaderOrange = glCreateShader(GL_FRAGMENT_SHADER);
-    unsigned int shaderProgramOrange = glCreateProgram();
-
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    glShaderSource(fragmentShaderOrange, 1, &fragmentShader1Source, NULL);
-    glCompileShader(fragmentShaderOrange);
-
-    glAttachShader(shaderProgramOrange, vertexShader);
-    glAttachShader(shaderProgramOrange, fragmentShaderOrange);
-    glLinkProgram(shaderProgramOrange);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShaderOrange);
-
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -99,9 +69,9 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderProgramOrange);
+        ourShader.use();
         glBindVertexArray(VAOs);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -109,7 +79,6 @@ int main() {
 	
     glDeleteVertexArrays(1, &VAOs);
     glDeleteBuffers(1, &VBOs);
-    glDeleteProgram(shaderProgramOrange);
 
     glfwTerminate();
 
