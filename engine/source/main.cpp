@@ -21,13 +21,14 @@ const char* vertexShaderSource = "#version 330 core\n"
 const char* fragmentShader1Source = "#version 330 core\n"
 "out vec4 FragColor;\n"
 "in vec4 vertexColor;\n"
+"uniform vec4 myColorThere;\n"
 "void main()\n"
 "{\n"
 "   vec4 myColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
 "   vec3 myColorOne = vec3(1.0f, 0.5f, 0.2f);\n"
 "   vec2 myColorTwo = vec2(1.0f, 0.5f);\n"
 "   FragColor = vec4(myColorTwo.r, myColorTwo.g, myColorOne.b, myColor.a);\n"
-"   FragColor = vertexColor;"
+"   FragColor = myColorThere;"
 "}\n\0";
 
 int main() {
@@ -88,6 +89,8 @@ int main() {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShaderOrange);
 
+    int vertexColorLocation = glGetUniformLocation(shaderProgramOrange, "myColorThere");
+
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -96,6 +99,11 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgramOrange);
+
+        float timeValue = glfwGetTime();
+        float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
         glBindVertexArray(VAOs);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
