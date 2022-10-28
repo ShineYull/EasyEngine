@@ -5,6 +5,9 @@
 
 #include <tool/shader.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <tool/stb_image.h>
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
@@ -41,29 +44,68 @@ int main() {
     Shine::Shader ourShader("../../engine/source/GLSL/vertex.glsl", "../../engine/source/GLSL/fragment.glsl"); // you can name your shader files however you like
 
     float firstTriangle[] = {
-        // 位置              // 颜色
-         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // 右下
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // 左下
-         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // 顶部
+        // positions          // colors           // texture coords
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
     };
-    unsigned int VAOs, VBOs;
+    unsigned int indices[] = {
+    0, 1, 3, // first triangle
+    1, 2, 3  // second triangle
+    };
+    unsigned int VAOs, VBOs, EBO;
     glGenVertexArrays(1, &VAOs);
     glGenBuffers(1, &VBOs);
+    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAOs);
+
     glBindBuffer(GL_ARRAY_BUFFER, VBOs);
     glBufferData(GL_ARRAY_BUFFER, sizeof(firstTriangle), firstTriangle, GL_STATIC_DRAW);
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     /* position attrib */
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     /* color attrib */
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    /* texture coord attrib */
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     /* uniform location */
     int uniformlocationOfferset = glGetUniformLocation(ourShader.ID, "offerset");
+
+    float texCoords[] = {
+        // positions          // colors           // texture coords
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+    };
+
+    unsigned int texture;
+    glGenBuffers(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load("../../engine/asset/woodenbox.jpg", &width, &height, &nrChannels, 0);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -72,10 +114,12 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glBindTexture(GL_TEXTURE_2D, texture);
+
         ourShader.use();
         glUniform4f(uniformlocationOfferset, 0.5f, 0.0f, 0.0f, 0.0f);
         glBindVertexArray(VAOs);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -83,6 +127,7 @@ int main() {
 	
     glDeleteVertexArrays(1, &VAOs);
     glDeleteBuffers(1, &VBOs);
+    glDeleteBuffers(1, &EBO);
 
     glfwTerminate();
 
