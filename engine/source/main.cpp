@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
-
+#include <window.h>
 #include <tool/shader.h>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -16,33 +16,26 @@ const unsigned int SCR_HEIGHT = 600;
 
 int main() {
 	
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
-    if (window == NULL)
+    /***************************** Init Windows ********************************/
+    Shine::Window window(3, 3);
+    window.CreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    if (window.window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    window.MakeContextCurrent(window.window);
+    window.SetFramebufferSizeCallback(window.window, framebuffer_size_callback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+    /***************************** Init Windows ********************************/
 
-    Shine::Shader ourShader("../../engine/source/GLSL/vertex.glsl", "../../engine/source/GLSL/fragment.glsl"); // you can name your shader files however you like
-
+    /***************************** Create Vertex ********************************/
     float firstTriangle[] = {
         // positions          // colors           // texture coords
          0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
@@ -78,10 +71,15 @@ int main() {
     /* texture coord attrib */
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
+    /***************************** Create Vertex ********************************/
+
+    /* Create Shader Program */
+    Shine::Shader ourShader("../../engine/source/GLSL/vertex.glsl", "../../engine/source/GLSL/fragment.glsl"); // you can name your shader files however you like
 
     /* uniform location */
     int uniformlocationOfferset = glGetUniformLocation(ourShader.ID, "offerset");
 
+    /***************************** Create Texture ********************************/
     float texCoords[] = {
         // positions          // colors           // texture coords
          0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
@@ -106,10 +104,11 @@ int main() {
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
+    /***************************** Create Texture ********************************/
 
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window.window))
     {
-        processInput(window);
+        processInput(window.window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -117,11 +116,10 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, texture);
 
         ourShader.use();
-        glUniform4f(uniformlocationOfferset, 0.5f, 0.0f, 0.0f, 0.0f);
         glBindVertexArray(VAOs);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(window.window);
         glfwPollEvents();
     }
 	
