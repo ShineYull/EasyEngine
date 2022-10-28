@@ -62,6 +62,9 @@ int main() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    /* uniform location */
+    int uniformlocationOfferset = glGetUniformLocation(ourShader.ID, "offerset");
+
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -70,6 +73,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         ourShader.use();
+        glUniform4f(uniformlocationOfferset, 0.5f, 0.0f, 0.0f, 0.0f);
         glBindVertexArray(VAOs);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
