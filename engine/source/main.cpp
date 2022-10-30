@@ -129,6 +129,9 @@ int main() {
     // or set it via the texture class
     ourShader.setInt("texture2", 1);
 
+    glm::mat4 trans(1.0f);
+    trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+
     while (!glfwWindowShouldClose(window.window))
     {
         processInput(window.window, &mixValue);
@@ -148,6 +151,7 @@ int main() {
         // set Uniform value
         ourShader.setFloat("factor", mixValue);
         ourShader.setFloat("factor1", (float)glfwGetTime());
+        ourShader.setMat4("scale", trans);
 
         // render container
         glBindVertexArray(VAOs);
