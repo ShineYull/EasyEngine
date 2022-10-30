@@ -130,7 +130,6 @@ int main() {
     ourShader.setInt("texture2", 1);
 
     glm::mat4 trans(1.0f);
-    trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
 
     while (!glfwWindowShouldClose(window.window))
     {
@@ -150,8 +149,11 @@ int main() {
 
         // set Uniform value
         ourShader.setFloat("factor", mixValue);
+        ourShader.setMat4("translate", glm::translate(trans, glm::vec3(0.5, 0.0, 0.0)));
         ourShader.setFloat("factor1", (float)glfwGetTime());
-        ourShader.setMat4("scale", trans);
+        ourShader.setMat4("scale", glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)));
+
+        trans = glm::mat4(1.0f);
 
         // render container
         glBindVertexArray(VAOs);
