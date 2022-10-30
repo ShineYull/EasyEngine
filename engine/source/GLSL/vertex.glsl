@@ -7,10 +7,21 @@ out vec3 ourColor;
 out vec2 TexCoord;
 
 uniform mat4 transform;
+uniform float factor1;
+
+mat4 rotate3d(float _angle) {
+	return mat4(
+		cos(_angle), -sin(_angle), 0.0f, 0.0f,
+		sin(_angle), cos(_angle), 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	);
+}
 
 void main()
 {
-	gl_Position = transform * vec4(aPos, 1.0);
+	//gl_Position = transform * vec4(aPos, 1.0);
+	gl_Position = vec4(rotate3d(factor1) * vec4(aPos, 1.0));
 	ourColor = aColor;
 	TexCoord = aTexCoord;
 }
