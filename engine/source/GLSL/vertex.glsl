@@ -28,8 +28,9 @@ mat4 rotate3d(float _angle) {
 
 void main()
 {
-	gl_Position = scale * rotate3d(factor1) * translate * vec4(aPos, 1.0); // Translation and then rotation
+	//gl_Position = scale * rotate3d(factor1) * translate * vec4(aPos, 1.0); // Translation and then rotation
 	//gl_Position = scale * translate *  rotate3d(factor1) * vec4(aPos, 1.0); // Rotate first, then translate
+	gl_Position = translate * vec4(aPos, 1.0);
 	ourColor = aColor;
 	TexCoord = aTexCoord;
 }

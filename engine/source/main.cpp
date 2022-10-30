@@ -130,6 +130,7 @@ int main() {
     ourShader.setInt("texture2", 1);
 
     glm::mat4 trans(1.0f);
+    unsigned int translate = glGetUniformLocation(ourShader.ID, "translate");
 
     while (!glfwWindowShouldClose(window.window))
     {
@@ -147,17 +148,23 @@ int main() {
         //use shader program
         ourShader.use();
 
-        // set Uniform value
         ourShader.setFloat("factor", mixValue);
-        ourShader.setMat4("translate", glm::translate(trans, glm::vec3(0.5, 0.0, 0.0)));
-        ourShader.setFloat("factor1", (float)glfwGetTime());
-        ourShader.setMat4("scale", glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)));
-
-        trans = glm::mat4(1.0f);
 
         // render container
+        trans = glm::translate(trans, glm::vec3(0.5, 0.0, 0.0));
+        trans = glm::scale(trans, glm::vec3(sin(glfwGetTime()), sin(glfwGetTime()), 0.5));
+        glUniformMatrix4fv(translate, 1, GL_FALSE, glm::value_ptr(trans));
+        trans = glm::mat4(1.0f);
         glBindVertexArray(VAOs);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_POINTS, 6, GL_UNSIGNED_INT, 0);
+
+        trans = glm::translate(trans, glm::vec3(-0.5, 0.0, 0.0));
+        trans = glm::rotate(trans, (float)glm::radians(glfwGetTime() * 30.0f), glm::vec3(0.0, 0.0, 0.1));
+        glUniformMatrix4fv(translate, 1, GL_FALSE, glm::value_ptr(trans));
+        trans = glm::mat4(1.0f);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_POINTS, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window.window);
         glfwPollEvents();
