@@ -129,26 +129,6 @@ int main() {
     // or set it via the texture class
     ourShader.setInt("texture2", 1);
 
-
-
-    ////transform
-    //glm::vec4 position(1.0f, 1.0f, 1.0f, 1.0f);
-    //glm::mat4 translate(1.0f);
-    ////displacement
-    //translate = glm::translate(translate, glm::vec3(1.0f, 0.0f, 0.0f));
-    //position = translate * position;
-    //std::cout << position.x << "--" << position.y << "--" << position.z << std::endl;
-    //
-    ////scale
-    //translate = glm::scale(translate, glm::vec3(2.0f, 3.0f, 4.0f));
-    //position = translate * position;
-    //std::cout << position.x << "--" << position.y << "--" << position.z << std::endl;
-
-    ////rotate
-    //translate = glm::rotate(translate, (float)glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    //position = translate * position;
-    //std::cout << position.x << "--" << position.y << "--" << position.z << std::endl;
-
     while (!glfwWindowShouldClose(window.window))
     {
         processInput(window.window, &mixValue);
@@ -162,17 +142,11 @@ int main() {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
-        // create transformations
-        //glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        //transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
-        //transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-
         //use shader program
         ourShader.use();
 
         // set Uniform value
         ourShader.setFloat("factor", mixValue);
-        //ourShader.setMat4("transform", transform);
         ourShader.setFloat("factor1", (float)glfwGetTime());
 
         // render container
