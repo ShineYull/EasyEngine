@@ -6,13 +6,14 @@
 #include <tool/stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow* window, float* pMixValue);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 int main() {
-	
+    float mixValue = 0;
+
     /***************************** Init Windows ********************************/
     Shine::Window window(3, 3);
     window.CreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -73,9 +74,6 @@ int main() {
     /* Create Shader Program */
     Shine::Shader ourShader("../../engine/source/GLSL/vertex.glsl", "../../engine/source/GLSL/fragment.glsl"); // you can name your shader files however you like
 
-    /* uniform location */
-    int uniformlocationOfferset = glGetUniformLocation(ourShader.ID, "offerset");
-
     /***************************** Create Texture ********************************/
     /* create texture1 */
     unsigned int texture1;
@@ -129,7 +127,7 @@ int main() {
 
     while (!glfwWindowShouldClose(window.window))
     {
-        processInput(window.window);
+        processInput(window.window, &mixValue);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -139,6 +137,9 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
+
+        // set Uniform value
+        ourShader.setFloat("factor", mixValue);
 
         // render container
         ourShader.use();
@@ -158,10 +159,19 @@ int main() {
 	return 0;
 }
 
-void processInput(GLFWwindow* window)
+void processInput(GLFWwindow* window, float *pMixValue)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        *pMixValue += 0.001f;
+        if (*pMixValue > 1.0f) *pMixValue = 1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        *pMixValue -= 0.001f;
+        if (*pMixValue < 0.0f) *pMixValue = 0.0f;
+    }
 }
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
