@@ -11,6 +11,10 @@
 #include <geometry/BoxGeometry.h>
 #include <geometry/SphereGeometry.h>
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
@@ -18,6 +22,9 @@ const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HEIGHT = 600;
 
 int main() {
+    /* imgui */
+    const char* glsl_version = "#version 330";
+
     /***************************** Init Windows ********************************/
     Shine::Window window(3, 3);
     window.CreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -36,6 +43,14 @@ int main() {
         return -1;
     }
     /***************************** Init Windows ********************************/
+
+    /* imgui */
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window.window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
 
      glm::vec3 cubePositions[] = {
         glm::vec3(0.0f,  0.0f,  0.0f),
@@ -89,6 +104,16 @@ int main() {
     {
         processInput(window.window);
 
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        
+        float f = 0.0f;
+        ImGui::Begin("Shine");
+        ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::End();
+
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -130,6 +155,10 @@ int main() {
         ourShader.setMat4("model", model);
         glBindVertexArray(sphereGeometry.VAO);
         glDrawElements(GL_TRIANGLES, sphereGeometry.indices.size(), GL_UNSIGNED_INT, 0);
+
+        // Rendering
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window.window);
         glfwPollEvents();
