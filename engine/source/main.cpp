@@ -12,14 +12,12 @@
 #include <geometry/SphereGeometry.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window, float* pMixValue);
+void processInput(GLFWwindow* window);
 
 const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HEIGHT = 600;
 
 int main() {
-    float mixValue = 0.5f;
-
     /***************************** Init Windows ********************************/
     Shine::Window window(3, 3);
     window.CreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -39,9 +37,9 @@ int main() {
     }
     /***************************** Init Windows ********************************/
 
-    // Shine::PlaneGeometry planeGeometry(1.0, 1.0, 8, 8);
+    Shine::PlaneGeometry planeGeometry(1.0, 1.0);
     //Shine::BoxGeometry boxGeometry(0.2, 1.5, 0.2, 1.0, 100.0, 1.0);
-    Shine::SphereGeometry sphereGeometry(0.5, 20.0, 20.0);
+    //Shine::SphereGeometry sphereGeometry(0.5, 20.0, 20.0);
     Shine::Shader ourShader("../../engine/source/GLSL/vertex.glsl", "../../engine/source/GLSL/fragment.glsl");
 
     /***************************** Create Texture ********************************/
@@ -73,45 +71,46 @@ int main() {
 
     while (!glfwWindowShouldClose(window.window))
     {
-        processInput(window.window, &mixValue);
+        processInput(window.window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         ourShader.use();
-        ourShader.setFloat("factor", -glfwGetTime() * 0.3);
+
+        glm::mat4 model(1.0f);
+        glm::mat4 view(1.0f);
+        glm::mat4 projection(1.0f);
+        model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.1f, 100.0f);
+
+        ourShader.setMat4("model", model);
+        ourShader.setMat4("view", view);
+        ourShader.setMat4("projection", projection);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
 
-        glBindVertexArray(sphereGeometry.VAO);
+        glBindVertexArray(planeGeometry.VAO);
         glPointSize(10.0f);
-        //glDrawElements(GL_TRIANGLES, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
-        glDrawElements(GL_POINTS, sphereGeometry.indices.size(), GL_UNSIGNED_INT, 0);
-        glDrawElements(GL_LINE_LOOP, sphereGeometry.indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
+        //glDrawElements(GL_POINTS, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
+        //glDrawElements(GL_LINE_LOOP, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window.window);
         glfwPollEvents();
     }
-    sphereGeometry.dispose();
+    planeGeometry.dispose();
     glfwTerminate();
 
 	return 0;
 }
 
-void processInput(GLFWwindow* window, float *pMixValue)
+void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-        *pMixValue += 0.001f;
-        if (*pMixValue > 1.0f) *pMixValue = 1.0f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        *pMixValue -= 0.001f;
-        if (*pMixValue < 0.0f) *pMixValue = 0.0f;
-    }
 }
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
