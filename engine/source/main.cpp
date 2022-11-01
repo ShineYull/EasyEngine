@@ -37,8 +37,8 @@ int main() {
     }
     /***************************** Init Windows ********************************/
 
-    Shine::PlaneGeometry planeGeometry(1.0, 1.0);
-    //Shine::BoxGeometry boxGeometry(0.2, 1.5, 0.2, 1.0, 100.0, 1.0);
+    //Shine::PlaneGeometry planeGeometry(1.0, 1.0);
+    Shine::BoxGeometry boxGeometry(1.0, 1.0, 1.0, 1.0, 1.0);
     //Shine::SphereGeometry sphereGeometry(0.5, 20.0, 20.0);
     Shine::Shader ourShader("../../engine/source/GLSL/vertex.glsl", "../../engine/source/GLSL/fragment.glsl");
 
@@ -81,7 +81,7 @@ int main() {
         glm::mat4 model(1.0f);
         glm::mat4 view(1.0f);
         glm::mat4 projection(1.0f);
-        model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.1f, 100.0f);
 
@@ -92,16 +92,16 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
 
-        glBindVertexArray(planeGeometry.VAO);
+        glBindVertexArray(boxGeometry.VAO);
         glPointSize(10.0f);
-        glDrawElements(GL_TRIANGLES, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, boxGeometry.indices.size(), GL_UNSIGNED_INT, 0);
         //glDrawElements(GL_POINTS, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
         //glDrawElements(GL_LINE_LOOP, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window.window);
         glfwPollEvents();
     }
-    planeGeometry.dispose();
+    boxGeometry.dispose();
     glfwTerminate();
 
 	return 0;
