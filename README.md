@@ -3,6 +3,8 @@ Simple and easy-to-use game engine, I hope to give some help to friends who want
   
 # How to Build
 Replace the opengl library supported by the corresponding operating system, and then use cmake to compile.  
+```shell
 mkdir build  
 cd build  
 cmake ..
+```
