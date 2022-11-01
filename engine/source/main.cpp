@@ -50,9 +50,9 @@ int main() {
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
 
-    //Shine::PlaneGeometry planeGeometry(1.0, 1.0);
+    Shine::PlaneGeometry planeGeometry(1.0, 1.0);
     Shine::BoxGeometry boxGeometry(1.0, 1.0, 1.0, 1.0, 1.0);
-    //Shine::SphereGeometry sphereGeometry(0.5, 20.0, 20.0);
+    Shine::SphereGeometry sphereGeometry(0.5, 20.0, 20.0);
     Shine::Shader ourShader("../../engine/source/GLSL/vertex.glsl", "../../engine/source/GLSL/fragment.glsl");
 
     /***************************** Create Texture ********************************/
@@ -71,9 +71,9 @@ int main() {
 
     // º”‘ÿÕº∆¨
     int width, height, nrChannels;
-    unsigned char* data = stbi_load("../../engine/asset/awesomeface.png", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load("../../engine/asset/woodenbox.jpg", &width, &height, &nrChannels, 0);
     if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     stbi_image_free(data);
@@ -99,7 +99,7 @@ int main() {
 
         glm::mat4 view(1.0f);
         glm::mat4 projection(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -4.0f));
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
         projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
         ourShader.setMat4("view", view);
         ourShader.setMat4("projection", projection);
@@ -117,6 +117,19 @@ int main() {
         }
         //glDrawElements(GL_POINTS, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
         //glDrawElements(GL_LINE_LOOP, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
+
+        glm::mat4 model(1.0f);
+        model = glm::translate(model, glm::vec3(2.0, 0.0f, 0.0f));
+        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(-45.0f), glm::vec3(1.0, 0.0f, 0.0f));
+        ourShader.setMat4("model", model);
+        glBindVertexArray(planeGeometry.VAO);
+        glDrawElements(GL_TRIANGLES, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
+
+        model = glm::translate(model, glm::vec3(-4.0, 0.0f, 0.0f));
+        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(-45.0f), glm::vec3(1.0, 0.0f, 0.0f));
+        ourShader.setMat4("model", model);
+        glBindVertexArray(sphereGeometry.VAO);
+        glDrawElements(GL_TRIANGLES, sphereGeometry.indices.size(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window.window);
         glfwPollEvents();
