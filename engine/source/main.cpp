@@ -8,6 +8,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <geometry/PlaneGeometry.h>
+#include <geometry/BoxGeometry.h>
+#include <geometry/SphereGeometry.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, float* pMixValue);
@@ -37,7 +39,9 @@ int main() {
     }
     /***************************** Init Windows ********************************/
 
-    Shine::PlaneGeometry planeGeometry(1.0, 1.0, 8, 8);
+    // Shine::PlaneGeometry planeGeometry(1.0, 1.0, 8, 8);
+    //Shine::BoxGeometry boxGeometry(0.2, 1.5, 0.2, 1.0, 100.0, 1.0);
+    Shine::SphereGeometry sphereGeometry(0.5, 20.0, 20.0);
     Shine::Shader ourShader("../../engine/source/GLSL/vertex.glsl", "../../engine/source/GLSL/fragment.glsl");
 
     /***************************** Create Texture ********************************/
@@ -75,21 +79,21 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         ourShader.use();
+        ourShader.setFloat("factor", -glfwGetTime() * 0.3);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
 
-        glBindVertexArray(planeGeometry.VAO);
+        glBindVertexArray(sphereGeometry.VAO);
         glPointSize(10.0f);
         //glDrawElements(GL_TRIANGLES, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
-        glDrawElements(GL_POINTS, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
-        glDrawElements(GL_LINE_LOOP, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_POINTS, sphereGeometry.indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_LINE_LOOP, sphereGeometry.indices.size(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window.window);
         glfwPollEvents();
     }
-
-    planeGeometry.dispose();
+    sphereGeometry.dispose();
     glfwTerminate();
 
 	return 0;

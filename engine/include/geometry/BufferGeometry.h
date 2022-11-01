@@ -21,6 +21,8 @@ namespace Shine {
 
 	};
 	
+	const float PI = glm::pi<float>();
+
 	class BufferGeometry
 	{
 	public:

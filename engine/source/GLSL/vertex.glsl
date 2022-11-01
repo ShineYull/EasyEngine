@@ -6,6 +6,8 @@ layout(location = 2) in vec2 TexCoords;
 out vec3 outPosition;
 out vec2 outTexCoord;
 
+uniform float factor;
+
 /**
   * |  1   0      0     0|    |x|    |         x         |
   * |  0   cos0  -sin0  0|  * |y| =  |cos0 * y - sin0 * z|
@@ -41,6 +43,6 @@ mat4 rotateXYZ(float angle) {
 }
 
 void main() {
-  gl_Position = vec4(Position, 1.0f);
+  gl_Position = rotateXYZ(factor) * vec4(Position, 1.0f);
   outTexCoord = TexCoords;
 }
