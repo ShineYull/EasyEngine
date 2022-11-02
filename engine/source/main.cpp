@@ -18,8 +18,8 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
-const unsigned int SCREEN_WIDTH = 1920;
-const unsigned int SCREEN_HEIGHT = 1080;
+int SCREEN_WIDTH = 1920;
+int SCREEN_HEIGHT = 1080;
 
 int main() {
     /* imgui */
@@ -115,6 +115,8 @@ int main() {
         ImGui::Begin("Shine");
         ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::SliderFloat("float", &f, 0.0f, 360.0f);
+        ImGui::SliderInt("int1", &SCREEN_WIDTH, 1.0f, 1920.0f);
+        ImGui::SliderInt("int2", &SCREEN_HEIGHT, 1.0f, 1080.0f);
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
         ImGui::End();
 
