@@ -100,7 +100,7 @@ int main() {
     // Open depth test.
     glEnable(GL_DEPTH_TEST);
 
-    float f = 0.0f;
+    float f = 45.0f;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     while (!glfwWindowShouldClose(window.window))
@@ -114,7 +114,7 @@ int main() {
         
         ImGui::Begin("Shine");
         ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::SliderFloat("float", &f, 0.0f, 10.0f);
+        ImGui::SliderFloat("float", &f, 0.0f, 360.0f);
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
         ImGui::End();
 
@@ -128,8 +128,8 @@ int main() {
 
         glm::mat4 view(1.0f);
         glm::mat4 projection(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f*f));
-        projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
+        projection = glm::perspective(glm::radians(f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
         ourShader.setMat4("view", view);
         ourShader.setMat4("projection", projection);
 
