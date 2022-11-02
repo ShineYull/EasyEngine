@@ -100,6 +100,8 @@ int main() {
     // Open depth test.
     glEnable(GL_DEPTH_TEST);
 
+    float f = 0.0f;
+
     while (!glfwWindowShouldClose(window.window))
     {
         processInput(window.window);
@@ -109,9 +111,9 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         
-        float f = 0.0f;
         ImGui::Begin("Shine");
         ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
         ImGui::End();
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -163,6 +165,12 @@ int main() {
         glfwSwapBuffers(window.window);
         glfwPollEvents();
     }
+
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
     boxGeometry.dispose();
     glfwTerminate();
 
