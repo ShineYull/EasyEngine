@@ -101,6 +101,7 @@ int main() {
     glEnable(GL_DEPTH_TEST);
 
     float f = 0.0f;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     while (!glfwWindowShouldClose(window.window))
     {
@@ -114,9 +115,10 @@ int main() {
         ImGui::Begin("Shine");
         ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::SliderFloat("float", &f, 0.0f, 10.0f);
+        ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
         ImGui::End();
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         ourShader.use();
