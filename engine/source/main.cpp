@@ -10,6 +10,7 @@
 #include <geometry/PlaneGeometry.h>
 #include <geometry/BoxGeometry.h>
 #include <geometry/SphereGeometry.h>
+#include <camera.h>
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -71,7 +72,6 @@ int main() {
     Shine::Shader ourShader("../../engine/source/GLSL/vertex.glsl", "../../engine/source/GLSL/fragment.glsl");
 
     /***************************** Create Texture ********************************/
-    /* create texture1 */
     unsigned int texture1;
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
@@ -81,10 +81,8 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Í¼ÏñyÖá·­×ª
     stbi_set_flip_vertically_on_load(true);
 
-    // ¼ÓÔØÍ¼Æ¬
     int width, height, nrChannels;
     unsigned char* data = stbi_load("../../engine/asset/woodenbox.jpg", &width, &height, &nrChannels, 0);
     if (data) {
@@ -103,6 +101,9 @@ int main() {
     float f = 45.0f;
     float viewTranslate[] = { 0.0f, 0.0f, 1.0f };
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    /* Create Camera */
+    Shine::Camera camera(0.0f, 0.0f, 3.0f);
 
     while (!glfwWindowShouldClose(window.window))
     {
@@ -130,11 +131,18 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
 
-        glm::mat4 view(1.0f);
-        glm::mat4 projection(1.0f);
-        view = glm::translate(view, glm::vec3(viewTranslate[0], viewTranslate[1], viewTranslate[2]));
-        projection = glm::perspective(glm::radians(f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+        float radius = 10.0f;
+        float camX = sin(glfwGetTime()) * radius;
+        float camZ = cos(glfwGetTime()) * radius;
+        glm::mat4 view;
+        view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
         ourShader.setMat4("view", view);
+
+        //glm::mat4 view(1.0f);
+        glm::mat4 projection(1.0f);
+        //view = glm::translate(view, glm::vec3(viewTranslate[0], viewTranslate[1], viewTranslate[2]));
+        projection = glm::perspective(glm::radians(f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+        
         ourShader.setMat4("projection", projection);
 
         for (int i = 0; i < 10; i++) {
