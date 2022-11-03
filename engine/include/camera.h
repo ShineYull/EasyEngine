@@ -8,11 +8,15 @@
 namespace Shine {
 	class Camera {
 	public:
-		glm::mat4 lookAt;
+		glm::vec3 cameraPos;
+		glm::vec3 cameraFront;
+		glm::vec3 cameraUp;
 
 		Camera();
-		Camera(glm::vec3 position, glm::vec3 target, glm::vec3 upVector);
+		Camera(glm::vec3 position, glm::vec3 Front = glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3 upVector = glm::vec3(0.0, 1.0, 0.0));
 		~Camera();
+
+		glm::mat4 GetMat4();
 	private:
 
 	};

@@ -17,7 +17,7 @@
 #include <imgui_impl_opengl3.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow* window, Shine::Camera *camera);
 
 int SCREEN_WIDTH = 1920;
 int SCREEN_HEIGHT = 1080;
@@ -99,15 +99,14 @@ int main() {
     glEnable(GL_DEPTH_TEST);
 
     float f = 45.0f;
-    float viewTranslate[] = { 0.0f, 0.0f, 1.0f };
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     /* Create Camera */
-    viewTranslate[0] = 10.0f;
+    Shine::Camera camera(glm::vec3(0.0, 0.0f, 3.0));
 
     while (!glfwWindowShouldClose(window.window))
     {
-        processInput(window.window);
+        processInput(window.window, &camera);
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -119,7 +118,6 @@ int main() {
         ImGui::SliderFloat("float", &f, 0.0f, 360.0f);
         ImGui::SliderInt("SCREEN_WIDTH", &SCREEN_WIDTH, 1.0f, 1920.0f);
         ImGui::SliderInt("SCREEN_HEIGHT", &SCREEN_HEIGHT, 1.0f, 1080.0f);
-        ImGui::SliderFloat3("viewTranslate", viewTranslate, -50.0f, 50.0f);
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
         ImGui::End();
 
@@ -131,14 +129,9 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
 
-        float camX = sin(glfwGetTime()) * viewTranslate[0];
-        float camZ = cos(glfwGetTime()) * viewTranslate[0];
-        Shine::Camera camera(glm::vec3(camX, 0.0, camZ), glm::vec3(viewTranslate[1], 0.0, 0.0), glm::vec3(0.0, 1.0f, 0.0));
-        ourShader.setMat4("view", camera.lookAt);
+        ourShader.setMat4("view", camera.GetMat4());
 
-        //glm::mat4 view(1.0f);
         glm::mat4 projection(1.0f);
-        //view = glm::translate(view, glm::vec3(viewTranslate[0], viewTranslate[1], viewTranslate[2]));
         projection = glm::perspective(glm::radians(f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
         
         ourShader.setMat4("projection", projection);
@@ -189,10 +182,19 @@ int main() {
 	return 0;
 }
 
-void processInput(GLFWwindow* window)
+void processInput(GLFWwindow* window, Shine::Camera *camera)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    float cameraSpeed = 0.05f; // adjust accordingly
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera->cameraPos += cameraSpeed * camera->cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera->cameraPos -= cameraSpeed * camera->cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera->cameraPos -= glm::normalize(glm::cross(camera->cameraFront, camera->cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera->cameraPos += glm::normalize(glm::cross(camera->cameraFront, camera->cameraUp)) * cameraSpeed;
 }
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
