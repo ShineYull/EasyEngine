@@ -103,7 +103,7 @@ int main() {
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     /* Create Camera */
-    Shine::Camera camera(0.0f, 0.0f, 3.0f);
+    viewTranslate[0] = 10.0f;
 
     while (!glfwWindowShouldClose(window.window))
     {
@@ -119,7 +119,7 @@ int main() {
         ImGui::SliderFloat("float", &f, 0.0f, 360.0f);
         ImGui::SliderInt("SCREEN_WIDTH", &SCREEN_WIDTH, 1.0f, 1920.0f);
         ImGui::SliderInt("SCREEN_HEIGHT", &SCREEN_HEIGHT, 1.0f, 1080.0f);
-        ImGui::SliderFloat3("viewTranslate", viewTranslate, -10.0f, 10.0f);
+        ImGui::SliderFloat3("viewTranslate", viewTranslate, -50.0f, 50.0f);
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
         ImGui::End();
 
@@ -131,12 +131,10 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
 
-        float radius = 10.0f;
-        float camX = sin(glfwGetTime()) * radius;
-        float camZ = cos(glfwGetTime()) * radius;
-        glm::mat4 view;
-        view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
-        ourShader.setMat4("view", view);
+        float camX = sin(glfwGetTime()) * viewTranslate[0];
+        float camZ = cos(glfwGetTime()) * viewTranslate[0];
+        Shine::Camera camera(glm::vec3(camX, 0.0, camZ), glm::vec3(viewTranslate[1], 0.0, 0.0), glm::vec3(0.0, 1.0f, 0.0));
+        ourShader.setMat4("view", camera.lookAt);
 
         //glm::mat4 view(1.0f);
         glm::mat4 projection(1.0f);

@@ -5,9 +5,9 @@ namespace Shine {
 	{
 	}
 
-	Camera::Camera(float x, float y, float z)
+	Camera::Camera(glm::vec3 position, glm::vec3 target, glm::vec3 upVector)
 	{
-		this->position = glm::vec3(x, y, z);
+		this->lookAt = glm::lookAt(position, target, upVector);
 	}
 
 	Camera::~Camera()

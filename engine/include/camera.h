@@ -8,10 +8,10 @@
 namespace Shine {
 	class Camera {
 	public:
-		glm::vec3 position;
+		glm::mat4 lookAt;
 
 		Camera();
-		Camera(float x, float y, float z);
+		Camera(glm::vec3 position, glm::vec3 target, glm::vec3 upVector);
 		~Camera();
 	private:
 
