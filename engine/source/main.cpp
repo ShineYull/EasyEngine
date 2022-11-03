@@ -22,6 +22,9 @@ void processInput(GLFWwindow* window, Shine::Camera *camera);
 int SCREEN_WIDTH = 1920;
 int SCREEN_HEIGHT = 1080;
 
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
 int main() {
     /* imgui */
     const char* glsl_version = "#version 330";
@@ -106,6 +109,10 @@ int main() {
 
     while (!glfwWindowShouldClose(window.window))
     {
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         processInput(window.window, &camera);
 
         // Start the Dear ImGui frame
@@ -186,7 +193,8 @@ void processInput(GLFWwindow* window, Shine::Camera *camera)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    float cameraSpeed = 0.05f; // adjust accordingly
+
+    float cameraSpeed = 2.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera->cameraPos += cameraSpeed * camera->cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
