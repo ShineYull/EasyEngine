@@ -23,6 +23,7 @@ namespace Shine {
 
 		void MakeContextCurrent(GLFWwindow* handle);
 		void SetFramebufferSizeCallback(GLFWwindow* handle, GLFWframebuffersizefun cbfun);
+		void SetMouseButtonCallback(GLFWwindow* handle, GLFWmousebuttonfun cbfun);
 	};
 }
 

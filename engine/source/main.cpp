@@ -18,6 +18,7 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, Shine::Camera *camera);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
 int SCREEN_WIDTH = 1920;
 int SCREEN_HEIGHT = 1080;
@@ -40,6 +41,7 @@ int main() {
     }
     window.MakeContextCurrent(window.window);
     window.SetFramebufferSizeCallback(window.window, framebuffer_size_callback);
+    window.SetMouseButtonCallback(window.window, mouse_button_callback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -204,7 +206,42 @@ void processInput(GLFWwindow* window, Shine::Camera *camera)
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera->cameraPos += glm::normalize(glm::cross(camera->cameraFront, camera->cameraUp)) * cameraSpeed;
 }
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (action == GLFW_PRESS)
+    {
+        switch (button)
+        {
+        case GLFW_MOUSE_BUTTON_LEFT:
+            break;
+        case GLFW_MOUSE_BUTTON_MIDDLE:
+            break;
+        case GLFW_MOUSE_BUTTON_RIGHT:
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            break;
+        default:
+            return;
+        }
+    }
+    else if (action == GLFW_RELEASE) {
+        switch (button)
+        {
+        case GLFW_MOUSE_BUTTON_LEFT:
+            break;
+        case GLFW_MOUSE_BUTTON_MIDDLE:
+            break;
+        case GLFW_MOUSE_BUTTON_RIGHT:
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            break;
+        default:
+            return;
+        }
+    }
+    return;
 }

@@ -31,4 +31,8 @@ namespace Shine {
 	void Window::SetFramebufferSizeCallback(GLFWwindow* handle, GLFWframebuffersizefun cbfun) {
 		glfwSetFramebufferSizeCallback(handle, cbfun);
 	}
+
+	void Window::SetMouseButtonCallback(GLFWwindow* handle, GLFWmousebuttonfun cbfun) {
+		glfwSetMouseButtonCallback(handle, cbfun);
+	}
 }
