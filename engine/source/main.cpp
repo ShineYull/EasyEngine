@@ -19,12 +19,21 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, Shine::Camera *camera);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
 int SCREEN_WIDTH = 1920;
 int SCREEN_HEIGHT = 1080;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+float lastX = SCREEN_WIDTH/2, lastY = SCREEN_HEIGHT/2;
+float yaw = 0, pitch = 0;
+bool mouseRightDown = false;
+bool firstMouse = false;
+
+/* Create Camera */
+Shine::Camera camera(glm::vec3(0.0, 0.0f, 3.0));
 
 int main() {
     /* imgui */
@@ -42,6 +51,7 @@ int main() {
     window.MakeContextCurrent(window.window);
     window.SetFramebufferSizeCallback(window.window, framebuffer_size_callback);
     window.SetMouseButtonCallback(window.window, mouse_button_callback);
+    window.SetCursorPosCallback(window.window, mouse_callback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -60,15 +70,15 @@ int main() {
 
      glm::vec3 cubePositions[] = {
         glm::vec3(0.0f,  0.0f,  0.0f),
-        glm::vec3(2.0f,  5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3(2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f,  3.0f, -7.5f),
-        glm::vec3(1.3f, -2.0f, -2.5f),
-        glm::vec3(1.5f,  2.0f, -2.5f),
-        glm::vec3(1.5f,  0.2f, -1.5f),
-        glm::vec3(-1.3f,  1.0f, -1.5f)
+        glm::vec3(12.0f,  5.0f, -12.0f),
+        glm::vec3(9.5f, -2.2f, 1.5f),
+        glm::vec3(7.8f, -2.0f, -9.3f),
+        glm::vec3(12.4f, -0.4f, 0.5f),
+        glm::vec3(9.7f,  3.0f, -4.5f),
+        glm::vec3(11.3f, -2.0f, 1.5f),
+        glm::vec3(11.5f,  2.0f, 1.5f),
+        glm::vec3(11.5f,  0.2f, 2.5f),
+        glm::vec3(9.3f,  1.0f, 2.5f)
     };
 
     Shine::PlaneGeometry planeGeometry(1.0, 1.0);
@@ -106,9 +116,6 @@ int main() {
     float f = 45.0f;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    /* Create Camera */
-    Shine::Camera camera(glm::vec3(0.0, 0.0f, 3.0));
-
     while (!glfwWindowShouldClose(window.window))
     {
         float currentFrame = glfwGetTime();
@@ -138,11 +145,9 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
 
-        ourShader.setMat4("view", camera.GetMat4());
-
         glm::mat4 projection(1.0f);
         projection = glm::perspective(glm::radians(f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
-        
+        ourShader.setMat4("view", camera.GetMat4());
         ourShader.setMat4("projection", projection);
 
         for (int i = 0; i < 10; i++) {
@@ -160,13 +165,14 @@ int main() {
         //glDrawElements(GL_LINE_LOOP, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
 
         glm::mat4 model(1.0f);
-        model = glm::translate(model, glm::vec3(2.0, 0.0f, 0.0f));
+        model = glm::translate(model, glm::vec3(10.0, 0.0f, 0.0f));
         model = glm::rotate(model, (float)glfwGetTime() * glm::radians(-45.0f), glm::vec3(1.0, 0.0f, 0.0f));
         ourShader.setMat4("model", model);
         glBindVertexArray(planeGeometry.VAO);
         glDrawElements(GL_TRIANGLES, planeGeometry.indices.size(), GL_UNSIGNED_INT, 0);
 
-        model = glm::translate(model, glm::vec3(-4.0, 0.0f, 0.0f));
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(10.0, 0.0f, 5.0f));
         model = glm::rotate(model, (float)glfwGetTime() * glm::radians(-45.0f), glm::vec3(1.0, 0.0f, 0.0f));
         ourShader.setMat4("model", model);
         glBindVertexArray(sphereGeometry.VAO);
@@ -224,6 +230,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
             break;
         case GLFW_MOUSE_BUTTON_RIGHT:
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            mouseRightDown = true;
+            firstMouse = true;
             break;
         default:
             return;
@@ -238,10 +246,50 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
             break;
         case GLFW_MOUSE_BUTTON_RIGHT:
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            mouseRightDown = false;
             break;
         default:
             return;
         }
     }
     return;
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (!mouseRightDown) {
+        return;
+    }else if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        printf("xpos:%f\n", xpos);
+        printf("ypos:%f\n", ypos);
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.05;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    printf("\n");
+    printf("%f, %f, %f", glm::normalize(front).x, glm::normalize(front).y, glm::normalize(front).z);
+    printf("%f, %f, %f", camera.cameraFront.x, camera.cameraFront.y, camera.cameraFront.z);
+    camera.cameraFront = glm::normalize(front);
 }

@@ -35,4 +35,8 @@ namespace Shine {
 	void Window::SetMouseButtonCallback(GLFWwindow* handle, GLFWmousebuttonfun cbfun) {
 		glfwSetMouseButtonCallback(handle, cbfun);
 	}
+
+	void Window::SetCursorPosCallback(GLFWwindow* handle, GLFWcursorposfun cbfun) {
+		glfwSetCursorPosCallback(handle, cbfun);
+	}
 }
