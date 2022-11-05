@@ -35,76 +35,52 @@ bool firstMouse = false;
 /* Create Camera */
 Shine::Camera camera(glm::vec3(0.0, 0.0f, 3.0));
 
-std::vector <int> DragList; //拖拽列表 用於保存拖拽過來的數據
+std::vector <int> DragList;
 void DrawGUI()
 {
-    ImGui::Begin(u8"作業用");// 中文窗口標題測試 (默認使用八位元編碼 中文是16位的 所以前面要加一個u8 進行轉換)
+    ImGui::Begin(u8"作業用");
 
-    // 為了方便直接使用 ForLoop 進行創建   循環5次
     for (size_t i = 0; i < 5; i++)
     {
-        //創建 按鈕 名稱等於 循環次數轉換為字符串再轉換為文本
         ImGui::Button(std::to_string(i).c_str());
-        //限制最後一個不同添加下面的函數
         if (i + 1 < 5)
         {
-            //這一個函數會將下一個 控件位置 改為向右排佈  !! 此函數調用後沒有可以接受的控件程式崩潰
             ImGui::SameLine();
         }
-        //創建拖拽事件 (為上一個控件創建)
         if (ImGui::BeginDragDropSource())
         {
-            //拖拽時顯示控件 當然除了文本 你可以放置圖片
             ImGui::Text(std::string("Drag : ").append(std::to_string(i)).c_str());
-            //設置拖拽時變量保存
             ImGui::SetDragDropPayload("DragIndexButton", &i, sizeof(int));
             ImGui::EndDragDropSource();
         }
     }
-    //窗口完結
     ImGui::End();
 
-    //創建窗口
     ImGui::Begin("Drag Window");
-    //隨便放一個控件用於接收拖拽數據與訊息
     ImGui::Text("Drag Target");
-    //創建拖拽目標用事件 (為上一個控件創建)
     if (ImGui::BeginDragDropTarget())
     {
-        //獲取拖拽時變量保存
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DragIndexButton"))
         {
-            //把數據保存到 拖拽列表
             DragList.push_back(*(const int*)payload->Data);
         }
-        //完結拖拽事件
         ImGui::EndDragDropTarget();
     }
 
-    //循環次數為  數組大小
     for (size_t i = 0; i < DragList.size(); i++)
     {
-        //創建按鈕 名稱為 拖拽列表當中 當前循環次數 的數據 將其轉換為字符串再轉換為文本
         if (ImGui::Button(std::to_string(DragList.at(i)).c_str()))
         {
-            //當按鈕被點擊時 移除 拖拽列表 當中 當前循環次數 的數據
             DragList.erase(DragList.begin() + i);
         }
-        //此處和上方十分相似  限制最後一個不同添加下面的函數
         if (i + 1 < DragList.size())
         {
-            //這一個函數會將下一個 控件位置 改為向右排佈  !! 此函數調用後沒有可以接受的控件程式崩潰
             ImGui::SameLine();
         }
     }
-    //窗口完結
     ImGui::End();
 
-    //創建窗口
     ImGui::Begin("TextEditor");
-    //繪製文本編輯器
-    //te->Render("TextED");
-    //窗口完結
     ImGui::End();
 }
 
@@ -139,13 +115,9 @@ int main() {
     ImGuiIO& io = ImGui::GetIO();
     (void)io;
 
-    //允許停靠
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    //視口設置無裝飾
     io.ConfigFlags |= ImGuiViewportFlags_NoDecoration;
-    //允許視口停靠
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-    //停靠於背景
     io.ConfigFlags |= ImGuiCol_DockingEmptyBg;
 
     ImGui::StyleColorsDark();
@@ -216,20 +188,14 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        //創建視口停靠
         ImGui::DockSpaceOverViewport();
-        //調用 "GUI.h" 當中函數進行繪製
         DrawGUI();
-        //繪製 ImGui Demo Window (完全是可以不用)
         ImGui::ShowDemoWindow();
-        //獲取所需繪製數據
         ImGui::Render();
-        //繪製ImGui數據
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
-            //當窗口拉出窗口範圍 創建子窗口
             GLFWwindow* backup_current_context = glfwGetCurrentContext();
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
