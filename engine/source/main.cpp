@@ -36,52 +36,82 @@ bool firstMouse = false;
 Shine::Camera camera(glm::vec3(0.0, 0.0f, 3.0));
 
 std::vector <int> DragList;
-void DrawGUI()
+void DrawGUI(GLFWwindow *window, unsigned int textureId)
 {
-    ImGui::Begin(u8"作業用");
+    static bool dockspaceOpen = true;
+    static bool opt_fullscreen = true;
+    static bool opt_padding = false;
+    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
-    for (size_t i = 0; i < 5; i++)
+    // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+    // because it would be confusing to have two docking targets within each others.
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+    if (opt_fullscreen)
     {
-        ImGui::Button(std::to_string(i).c_str());
-        if (i + 1 < 5)
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+    }
+    else
+    {
+        dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+    }
+
+    // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
+    // and handle the pass-thru hole, so we ask Begin() to not render a background.
+    if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+        window_flags |= ImGuiWindowFlags_NoBackground;
+
+    // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+    // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+    // all active windows docked into it will lose their parent and become undocked.
+    // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+    // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+    if (!opt_padding)
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
+    if (!opt_padding)
+        ImGui::PopStyleVar();
+
+    if (opt_fullscreen)
+        ImGui::PopStyleVar(2);
+
+    // Submit the DockSpace
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+    {
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+    }
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
         {
-            ImGui::SameLine();
+            if (ImGui::MenuItem("Exit")) {
+                glfwSetWindowShouldClose(window, true);
+            }
+            ImGui::EndMenu();
         }
-        if (ImGui::BeginDragDropSource())
-        {
-            ImGui::Text(std::string("Drag : ").append(std::to_string(i)).c_str());
-            ImGui::SetDragDropPayload("DragIndexButton", &i, sizeof(int));
-            ImGui::EndDragDropSource();
-        }
+        ImGui::EndMenuBar();
     }
     ImGui::End();
 
-    ImGui::Begin("Drag Window");
-    ImGui::Text("Drag Target");
-    if (ImGui::BeginDragDropTarget())
-    {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DragIndexButton"))
-        {
-            DragList.push_back(*(const int*)payload->Data);
-        }
-        ImGui::EndDragDropTarget();
-    }
-
-    for (size_t i = 0; i < DragList.size(); i++)
-    {
-        if (ImGui::Button(std::to_string(DragList.at(i)).c_str()))
-        {
-            DragList.erase(DragList.begin() + i);
-        }
-        if (i + 1 < DragList.size())
-        {
-            ImGui::SameLine();
-        }
-    }
+    ImGui::Begin("Game");
+    ImGui::Image((void*)textureId, ImVec2(1000.0f, 700.0f));
     ImGui::End();
 
-    ImGui::Begin("TextEditor");
+    ImGui::Begin("log");
     ImGui::End();
+
+    ImGui::Begin("tree");
+    ImGui::End();
+
+    ImGui::ShowDemoWindow();
 }
 
 int main() {
@@ -90,7 +120,7 @@ int main() {
 
     /***************************** Init Windows ********************************/
     Shine::Window window(3, 3);
-    window.CreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "LearnOpenGL", NULL, NULL);
+    window.CreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "EasyEngine", NULL, NULL);
     if (window.window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -109,7 +139,7 @@ int main() {
     }
     /***************************** Init Windows ********************************/
 
-    /* imgui */
+    /******************** Imgui init style *******************/
     IMGUI_CHECKVERSION();
     ImGui::CreateContext(NULL);
     ImGuiIO& io = ImGui::GetIO();
@@ -123,6 +153,7 @@ int main() {
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window.window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
+    /******************** Imgui init style *******************/
 
      glm::vec3 cubePositions[] = {
         glm::vec3(0.0f,  0.0f,  0.0f),
@@ -141,19 +172,17 @@ int main() {
     Shine::BoxGeometry boxGeometry(1.0, 1.0, 1.0, 1.0, 1.0);
     Shine::SphereGeometry sphereGeometry(0.5, 20.0, 20.0);
     Shine::Shader ourShader("../../engine/source/GLSL/vertex.glsl", "../../engine/source/GLSL/fragment.glsl");
+    Shine::Shader screenShader("../../engine/source/GLSL/framebuffer_vert.glsl", "../../engine/source/GLSL/framebuffer_frag.glsl");
 
     /***************************** Create Texture ********************************/
     unsigned int texture1;
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
     stbi_set_flip_vertically_on_load(true);
-
     int width, height, nrChannels;
     unsigned char* data = stbi_load("../../engine/asset/woodenbox.jpg", &width, &height, &nrChannels, 0);
     if (data) {
@@ -166,11 +195,40 @@ int main() {
     ourShader.use();
     ourShader.setInt("texture1", 0);
 
-    // Open depth test.
-    glEnable(GL_DEPTH_TEST);
-
     float f = 45.0f;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    // use framebuffer
+    // ---------------------------------------------------------
+    unsigned int framebuffer; // 创建帧缓冲
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    unsigned int texColorBuffer; // 生成纹理
+    glGenTextures(1, &texColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0); // 将颜色纹理附加到当前绑定的帧缓冲对象
+
+    unsigned int renderBuffer;
+    glGenRenderbuffers(1, &renderBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBuffer); // 将渲染缓冲对象附加到帧缓冲的深度和模板附件上
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "ERROR:Framebuffer is not complete!" << std::endl;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // ---------------------------------------------------------
 
     while (!glfwWindowShouldClose(window.window))
     {
@@ -180,28 +238,20 @@ int main() {
 
         processInput(window.window, &camera);
 
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glEnable(GL_DEPTH_TEST);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Start the Dear ImGui frame
+
+        /******************** Imgui Start *******************/
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        /******************** Imgui Start *******************/
 
-        ImGui::DockSpaceOverViewport();
-        DrawGUI();
-        ImGui::ShowDemoWindow();
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            GLFWwindow* backup_current_context = glfwGetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(backup_current_context);
-        }
-
+        /******************** OpenGL Start *******************/
         ourShader.use();
 
         glActiveTexture(GL_TEXTURE0);
@@ -239,15 +289,37 @@ int main() {
         ourShader.setMat4("model", model);
         glBindVertexArray(sphereGeometry.VAO);
         glDrawElements(GL_TRIANGLES, sphereGeometry.indices.size(), GL_UNSIGNED_INT, 0);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); // 返回默认的帧缓冲对象
+
+        /********* Imgui window render ********/
+        //ImGui::DockSpaceOverViewport();
+        DrawGUI(window.window, texColorBuffer);
+        //ImGui::ShowDemoWindow();
+        /********* Imgui window render ********/
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            GLFWwindow* backup_current_context = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(backup_current_context);
+        }
+        /******************** Imgui Start *******************/
 
         glfwSwapBuffers(window.window);
         glfwPollEvents();
+        /******************** OpenGL Start *******************/
     }
 
-    // Cleanup
+    /************** imgui end *************/
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+    /************** imgui end *************/
 
     boxGeometry.dispose();
     glfwTerminate();
@@ -257,9 +329,6 @@ int main() {
 
 void processInput(GLFWwindow* window, Shine::Camera *camera)
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
     float cameraSpeed = 2.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera->cameraPos += cameraSpeed * camera->cameraFront;
@@ -320,8 +389,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     }else if (firstMouse) {
         lastX = xpos;
         lastY = ypos;
-        printf("xpos:%f\n", xpos);
-        printf("ypos:%f\n", ypos);
         firstMouse = false;
     }
 
@@ -346,8 +413,5 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
     front.y = sin(glm::radians(pitch));
     front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    printf("\n");
-    printf("%f, %f, %f", glm::normalize(front).x, glm::normalize(front).y, glm::normalize(front).z);
-    printf("%f, %f, %f", camera.cameraFront.x, camera.cameraFront.y, camera.cameraFront.z);
     camera.cameraFront = glm::normalize(front);
 }
